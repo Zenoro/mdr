@@ -1,0 +1,15 @@
+Simplified markdown
+Version: 0.9.3 (alpha)
+
+Usage:
+mdr [-hvi] [-f file] [-t int]
+    [-m char] [-r int]
+
+-f    the name of the markup file
+-t    indent for the second and subsequent
+      lines of the list (number of spaces)
+-m    symbol-marker of the unnumbered list
+-r    value of the red line
+-h    output of help with a description of the program
+-v    displaying the program version
+-i    flag for perfect redirection to file
