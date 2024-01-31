@@ -20,7 +20,6 @@ int main(int argc, char** argv) {
     setlocale(LC_ALL, "ru_RU.UTF-8");
     char gopt;
     Cfg_Attributes terminal_output;
-    char* marker;
     FILE* filename = stdin;
     Text help;
         while ((gopt=getopt(argc, argv, "f:t:m:r:hvi"))!=-1) {
@@ -52,19 +51,19 @@ int main(int argc, char** argv) {
                     while (fd.get(c))
                         help+=c;
                         wcout << help;
+                    fd.close();
                 }
                     return 0;
                 case 'v':
-                    wcout<<L"version 0.9.3"<<endl;
+                    wcout<<L"version 1.0"<<endl;
                     return 0;
                 case '?':
                     wcout<<L"Try \"-h\" param, you can get additional information."<<endl;
                     return -1;
             }
         }
-        // wcout<<L"filename="<<filename<<L"\n";
         Text_viewer saluki(filename, terminal_output);
         saluki.read();
-        saluki.print(wcout, terminal_output);
+        saluki.print(wcout);
         return 0;
 }

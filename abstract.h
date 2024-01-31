@@ -17,20 +17,20 @@ class Cfg_Attributes {
         struct  winsize w;
         ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
         terminal_w = w.ws_col;
-    };
+    }
 
     Cfg_Attributes(wchar_t m, unsigned int rst, unsigned int ltab, unsigned int etab, bool in_f){
         marker = m; redstr_tab = rst; extra_tab = etab; is_in_file = in_f;
         struct  winsize w;
         ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
         terminal_w = w.ws_col;
-    };
+    }
 };
 
 
 class Abstract_text {
 public:
-	// virtual ~Abstract_text() {};
+	virtual ~Abstract_text() {};
     virtual unsigned long int count_symbols() const = 0;
     virtual unsigned long int count_words() const = 0;
 	virtual int print(std::wostream& os, const Cfg_Attributes& attr) const =0;

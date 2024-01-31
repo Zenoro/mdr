@@ -4,19 +4,18 @@ using namespace std;
 
 void Text_viewer::read()
 {
-    setlocale(LC_ALL, "ru_RU.UTF-8");
     int int_index, space_ind, header_lvl;
     int list_lvl = 0, newline_ctr=0; Text buf;
     char status = 'n';
-    if (fin != NULL) {
+    if (fin != nullptr) {
         is_opened = true;
         wchar_t* some_str = new wchar_t[BUFSIZE];
         while (fgetws(some_str, BUFSIZE, fin)) {
             some_str[wcscspn(some_str, L"\n")] = 0;
+            Text newline(some_str);
             switch (status) {
                 case 'n':   // text after /n
                 {
-                    // Text n_text(some_str);
                     if (some_str[0] == L'\0'){
                         newline_ctr++;
                         break;
@@ -34,10 +33,8 @@ void Text_viewer::read()
                             header_lvl = 1;
                             while (some_str[header_lvl] == L'#')
                                 header_lvl++;
-                            Text hdr(some_str);
-                            // buf.slice(header_lvl, buf.length()-header_lvl);
-                            hdr.slice(header_lvl, hdr.length());
-                            containter.push_back(new Header(header_lvl, hdr));
+                            newline.slice(header_lvl, newline.length());
+                            containter.push_back(new Header(header_lvl, newline));
                             break;
                         }
                         else if (isdigit(some_str[0])) {    // numeric list or num+text
@@ -54,9 +51,7 @@ void Text_viewer::read()
                             }
                             else {      // text with num 
                                 status = 's';
-                                buf = Text(some_str);
-                                // buf.space_cleaner();
-                                // containter.push_back(new Simple_Text(buf));
+                                buf = newline;
                                 break;
                             }
                         }
@@ -68,15 +63,13 @@ void Text_viewer::read()
                             containter.push_back(new Some_List(mrkd, 0));
                             break;
                         }
-                        else if (Text(some_str).startswith(Text(L' ',4))) {    // code
+                        else if (newline.startswith(Text(L' ',4))) {    // code
                             containter.push_back(new Code(some_str));
                             break;
                         }
                         else {      // simple text
                             status = 's';
-                            buf = Text(some_str);
-                            // buf.space_cleaner();
-                            // containter.push_back(new Simple_Text(buf));
+                            buf = newline;
                             break;
                         };
                     }
@@ -91,45 +84,42 @@ void Text_viewer::read()
                             containter.push_back(new Simple_Text());
                         buf = Text();
                     }
-                    Text list_txt(some_str);
-                    if (list_txt.startswith(L' ')) {
+                    if (newline.startswith(L' ')) {
                         newline_ctr = 0;
-                        for (space_ind=0; list_txt[space_ind] == L' '; space_ind++);
-                        list_txt.left_space_cleaner();
-                        if (list_txt.startswith(L'*') && list_txt[1] == L' ') {      // marked text
+                        for (space_ind=0; newline[space_ind] == L' '; space_ind++);
+                        newline.left_space_cleaner();
+                        if (newline.startswith(L'*') && newline[1] == L' ') {      // marked text
                             int newind = space_ind / 2;
-                            list_txt.slice(2, list_txt.length());
+                            newline.slice(2, newline.length());
                             if (newind >= list_lvl) {
                                 newind = list_lvl;
                                 list_lvl++;
                             }
-                            // else list_lvl--;
-                            containter.push_back(new Some_List(list_txt, newind));
+                            containter.push_back(new Some_List(newline, newind));
                             break;
                         }
-                        else if (isdigit(list_txt[0])){        // numeric list or num+text
+                        else if (isdigit(newline[0])){        // numeric list or num+text
                             newline_ctr = 0;
-                            for (int_index=0; isdigit(list_txt[int_index]); int_index++);
+                            for (int_index=0; isdigit(newline[int_index]); int_index++);
                             if (some_str[int_index+space_ind] == L'.' && some_str[space_ind+int_index+1] == L' ') {     // numeric list
-                                Text marker(list_txt);
+                                Text marker(newline);
                                 marker.slice(marker.length()-int_index-2);
-                                list_txt.slice(int_index+2, list_txt.length());
+                                newline.slice(int_index+2, newline.length());
                                 int newind = space_ind / 2;
                                 if (newind >= list_lvl) {
                                     newind = list_lvl;
                                     list_lvl++;
                                 }
-                                // else list_lvl--;
-                                containter.push_back(new Some_List(marker, list_txt, newind));
+                                containter.push_back(new Some_List(marker, newline, newind));
                                 break;
                             }
                             else if (space_ind>=4) {    // code
-                                containter.push_back(new Code(list_txt));
+                                containter.push_back(new Code(newline));
                                 break;
                             }
                             else{   // Simple text with integer in the start+spaces (wtf)
                                 status = 's';
-                                buf = list_txt;
+                                buf = newline;
                                 break;
                             }
                         }
@@ -137,14 +127,14 @@ void Text_viewer::read()
                         {
                             newline_ctr = 0;
                             Text res(L' ', space_ind);
-                            res+=list_txt;
+                            res+=newline;
                             containter.push_back(new Code(res));
                             status = 'n';
                             break;
                         }
                         else {  // text (or list adder?) 
                             newline_ctr = 0;
-                            buf = list_txt;
+                            buf = newline;
                             status = 's';
                             break;
                         }
@@ -160,38 +150,33 @@ void Text_viewer::read()
                         if (some_str[int_index] == L'.' && some_str[int_index+1] == L' ') {     // numeric list
                             Text marker(some_str);
                             marker.slice(marker.length()-int_index-2);
-                            list_txt.slice(int_index+2, list_txt.length());
+                            newline.slice(int_index+2, newline.length());
                             list_lvl = 1;
-                            containter.push_back(new Some_List(marker, list_txt, 0));
+                            containter.push_back(new Some_List(marker, newline, 0));
                             break;
                         }
                         else {
                             status = 's';
-                            buf = list_txt;
-                            // buf.space_cleaner();
-                            // containter.push_back(new Simple_Text(buf));
+                            buf = newline;
                             break;
                         }
                     }
                     else if (some_str[0] == L'*' && some_str[1] == L' ') {  // marked list
                         newline_ctr = 0;
-                        list_txt.slice(2, list_txt.length());
+                        newline.slice(2, newline.length());
                         list_lvl = 1;
-                        containter.push_back(new Some_List(list_txt, 0));
+                        containter.push_back(new Some_List(newline, 0));
                         break;
                     }
                     else {      // simple text
                         newline_ctr = 0;
                         status = 's';
-                        buf = list_txt;
-                        // buf.space_cleaner();
-                        // containter.push_back(new Simple_Text(buf));
+                        buf = newline;
                         break;
                     };
                 }
 
                 case 's': {
-                    Text s_text(some_str);
                     if (some_str[0] == L'\0'){
                         status = 'n';
                         newline_ctr++;
@@ -205,20 +190,18 @@ void Text_viewer::read()
                                 status = 'l';
                                 Text marker(some_str);
                                 marker.slice(marker.length() - int_index - 2);     // берем с точкой и пробелом
-                                s_text.slice(int_index+2, s_text.length());     // текст без пробела вначале
+                                newline.slice(int_index+2, newline.length());     // текст без пробела вначале
                                 list_lvl = 1;
-                                containter.push_back(new Some_List(marker, s_text, 0));
+                                containter.push_back(new Some_List(marker, newline, 0));
                                 break;
                             }
                             else {
-                                // s_text.space_cleaner();
                                 buf += L' ';
-                                buf += s_text;
-                                // containter.push_back(new Simple_Text(buf));
+                                buf += newline;
                                 break;
                             }
                         }
-                        else if (s_text.startswith(L'*') && some_str[1] == L' ') {  // marked list
+                        else if (newline.startswith(L'*') && some_str[1] == L' ') {  // marked list
                             status = 'l';
                             Text mrkd(some_str);
                             mrkd.slice(2, mrkd.length());
@@ -226,27 +209,24 @@ void Text_viewer::read()
                             containter.push_back(new Some_List(mrkd, 0));
                             break;
                         }
-                        else if (s_text.startswith(Text(L' ', 4))) {    // code
-                            for (space_ind=0; s_text[space_ind] == L' '; space_ind++);
+                        else if (newline.startswith(Text(L' ', 4))) {    // code
+                            for (space_ind=0; newline[space_ind] == L' '; space_ind++);
                             status = 'n';
                             Text res(L' ', space_ind);
-                            res+= s_text;
+                            res+= newline;
                             containter.push_back(new Code(res));
                             break;
                         }
-                        else if (s_text.startswith(Text(L"-----"))) {     // (c/t)rap
+                        else if (newline.startswith(Text(L"-----"))) {     // (c/t)rap
                             status = 'n';
-                            // buf+=L'\n';
-                            // buf+=s_text;
                             buf.space_cleaner();
                             containter.push_back(new Header(0, buf));
-                            // containter.push_back(new Simple_Text(s_text));
                             buf = Text();
                             break;
                         }
                         else {
                             buf += L' ';
-                            buf += s_text;
+                            buf += newline;
                             break;
                         }
                     }
@@ -254,48 +234,54 @@ void Text_viewer::read()
             }
         }
     if (!buf.is_empty()) {
-        // if (newline_ctr > 1)
-            // containter.push_back(new Simple_Text());
         buf.space_cleaner();
         containter.push_back(new Simple_Text(buf));
         buf = Text();
     }
     fclose(fin);
+    delete[] some_str;
     }
     else {
-        wcerr << endl;
-        wcerr << L"Can't open file" << endl;
+        cerr << "\nCan't open file\n";
     }
-};
+}
 
 
-int Text_viewer::print(std::wostream& os, const Cfg_Attributes& attr) {
+int Text_viewer::print(std::wostream& os) {
     if (is_opened) {
         int cur=0, lst=0, status;
         unsigned int words_cnt = 0, symbols_cnt = 0;
-        setlocale(LC_ALL, "ru_RU.UTF-8");
         // 1 - code
         // 2 - header
         // 3 - lists
         // 4 - simple_text
         // -1 - error happened
-        for (const auto& it : containter){
+        Abstract_text* it;
+        while (!containter.empty()) {
+            it = containter.front();
             cur = it->printflag();
             if ((cur==1 || cur==3) && cur!=lst ||(lst==1 || lst==3) && cur!=lst && lst>0){
             // if (cur !=  lst && lst>0){
-                os << '\n';
+                os << L'\n';
             }
             lst = cur;
-            status = it->print(os, attr);
-            if (status == -1)
+            status = it->print(os, cfg);
+            if (status == -1) {
+                delete it;
+                while(!containter.empty()) {
+                    containter.pop_front();
+                    delete containter.front();
+                }
                 return -1;
-            os << '\n';
+            }
+            os << L'\n';
             symbols_cnt += it->count_symbols();
             words_cnt += it->count_words();
+            delete it;
+            containter.pop_front();
         }
-        wcerr << endl;
-        wcerr << L"Words count: " << words_cnt << endl;
-        wcerr << L"Symbols count: " << symbols_cnt << endl;
+        cerr << "\nWords count: " << words_cnt << '\n';
+        cerr << "Symbols count: " << symbols_cnt << '\n';
     }
     return 0;
-};
+}

@@ -2,29 +2,32 @@
 using namespace std;
 
 void Error_msg(int terminal_length) {
-    wcerr << endl;
-    wcerr << Text(L'-', terminal_length) << endl;
-    wcerr << L"Too low terminal width! Word length is more than terminal width" << endl;
-    wcerr << L"Terminal length: " << terminal_length << endl;
-    }
+    wcout << L'\n' << Text('-', terminal_length)<< L'\n';
+    cerr << "Too low terminal width! Word length is more than terminal width\n";
+    cerr << "Terminal length: " << terminal_length << '\n';
+}
 
 
 unsigned long int Simple_Text::count_words() const{
-    unsigned int res;
-    if (txt[0] !='\0' || txt[0] !='\n') 
-        res = 1;
-    else
-        res = 0;
-    for (int i=0; i<txt.length(); i++)
-        if (txt[i]==' ')
-            res++;
-    return res;
-};
+	Text buf(txt);
+	buf.space_cleaner();
+	if (buf.is_empty()){
+		return 0;
+	}
+	else {
+		unsigned long int res = 1;
+		for (int i = 0; i < buf.length(); i++){
+			if (buf[i] == L' ') {
+				res++;
+			}
+		}
+		return res;
+	}
+}
 
 int Simple_Text::print(std::wostream& os, const Cfg_Attributes& attr) const{
-    setlocale(LC_ALL, "ru_RU.UTF-8");
     int fst_str_flg = 0, cnt;
-    if (attr.terminal_w < attr.redstr_tab + 3) {
+    if (attr.terminal_w < attr.redstr_tab + 4) {
         Error_msg(attr.terminal_w);
         return -1;
     }
@@ -39,22 +42,25 @@ int Simple_Text::print(std::wostream& os, const Cfg_Attributes& attr) const{
         }
         Text word;
         Text txtt = txt + Text(L" "); 
-        for (int i=0; i<txtt.length(); i++)
-            if (!isspace(txtt[i]))
+        for (int i=0; i<txtt.length(); i++) {
+            if (!isspace(txtt[i])) {
                 word += Text(txtt[i], 1);
+            }
             else {
                 int wrdlen = word.length();
                 if (wrdlen > attr.terminal_w || cnt < 0) {
                     Error_msg(attr.terminal_w);
                     return -1;
                 }
-                else if (txtt[i] == L'\n')
+                else if (txtt[i] == L'\n'){
                     os << txtt[i];
+                }
                 else if (cnt - wrdlen - 1 >= 0) {    // слово нормально вмещается с пробелом
                     os << word;
                     os << L" ";
                     word = Text();
                     cnt = cnt - wrdlen - 1;
+
                 }
                 else if (cnt-wrdlen == 0) { // слово влезло в строку
                     os << word << endl;
@@ -74,8 +80,9 @@ int Simple_Text::print(std::wostream& os, const Cfg_Attributes& attr) const{
                     os << online;
                     os << L'\n';
                     afterline.slice(cnt-1, afterline.length());
-                    if (afterline.is_empty())
+                    if (afterline.is_empty()) {
                         cnt = attr.terminal_w;
+                    }
                     else {
                         os << afterline << L" ";
                         cnt = attr.terminal_w - afterline.length() - 1;
@@ -83,6 +90,7 @@ int Simple_Text::print(std::wostream& os, const Cfg_Attributes& attr) const{
                     word = Text();
                 }
             }
+        }
         return 4;
     }
 }

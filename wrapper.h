@@ -22,5 +22,5 @@ public:
     Text_viewer(FILE* fn, Cfg_Attributes config): fin(fn), cfg(config) {};
 
     void read();
-    int print(std::wostream& os, const Cfg_Attributes& attr);
+    int print(std::wostream& os);
 };

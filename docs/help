@@ -1,5 +1,5 @@
 Simplified markdown
-Version: 0.9.3 (alpha)
+Version: 1.0 (main)
 
 Usage:
 mdr [-hvi] [-f file] [-t int]
